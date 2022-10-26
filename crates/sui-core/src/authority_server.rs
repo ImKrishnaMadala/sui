@@ -467,9 +467,17 @@ impl ValidatorService {
                 }
                 Err(e) => {
                     // Record the cert for later execution, including causal completion if necessary.
-                    let _ = state
-                        .add_pending_certificates(vec![(tx_digest, Some(certificate))])
-                        .tap_err(|e| error!(?tx_digest, "add_pending_certificates failed: {}", e));
+                    // This helps the node more closely stay in sync with other nodes for owned
+                    // object transactions. For shared object transactions, just rely on the consensus
+                    // for data sync.
+                    if !shared_object_tx {
+                        let _ = state
+                            .add_pending_certificates(vec![certificate])
+                            .await
+                            .tap_err(|e| {
+                                error!(?tx_digest, "add_pending_certificates failed: {}", e)
+                            });
+                    }
                     return Err(tonic::Status::from(e));
                 }
                 Ok(response) => {

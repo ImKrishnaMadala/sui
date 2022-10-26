@@ -86,8 +86,6 @@ where
             // Delete any extra certificates now unprocessed.
             checkpoints.tables.extra_transactions.clear()?;
 
-            self.state.database.remove_all_pending_certificates()?;
-
             let (storage_charges, computation_charges, storage_rebates): (
                 Vec<u64>,
                 Vec<u64>,
