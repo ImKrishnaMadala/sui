@@ -193,8 +193,8 @@ impl SimpleFaucet {
                     err.to_string()
                 ))
             })?;
-        let interal_err = FaucetError::Internal("Failed to prepare coin, None returned.".into());
-        let gas_coin = gas_coin_opt.ok_or(interal_err)?;
+        let internal_err = FaucetError::Internal("Failed to prepare coin, None returned.".into());
+        let gas_coin = gas_coin_opt.ok_or(internal_err)?;
 
         let result = self
             .execute_pay_sui_txn_with_retrials(
@@ -328,7 +328,7 @@ impl SimpleFaucet {
             .keystore
             .sign(&signer, &txn_data.to_bytes())?;
 
-        let tx = Transaction::new(txn_data, signature).verify()?;
+        let tx = Transaction::from_data(txn_data, signature).verify()?;
         let tx_digest = *tx.digest();
         info!(
             ?tx_digest,
