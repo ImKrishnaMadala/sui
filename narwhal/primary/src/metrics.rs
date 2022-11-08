@@ -66,16 +66,12 @@ pub struct PrimaryChannelMetrics {
     pub tx_parents: IntGauge,
     /// occupancy of the channel from the `primary::Proposer` to the `primary::Core`
     pub tx_headers: IntGauge,
-    /// occupancy of the channel from the `primary::Synchronizer` to the `primary::HeaderWaiter`
-    pub tx_header_waiter: IntGauge,
     /// occupancy of the channel from the `primary::Synchronizer` to the `primary::CertificaterWaiter`
     pub tx_certificate_waiter: IntGauge,
-    /// occupancy of the channel from the `primary::HeaderWaiter` to the `primary::Core`
-    pub tx_headers_loopback: IntGauge,
     /// occupancy of the channel from the `primary::CertificateWaiter` to the `primary::Core`
     pub tx_certificates_loopback: IntGauge,
     /// occupancy of the channel from the `primary::PrimaryReceiverHandler` to the `primary::Core`
-    pub tx_primary_messages: IntGauge,
+    pub tx_certificates: IntGauge,
     /// occupancy of the channel from the `primary::BlockSynchronizerHandler` to the `primary::BlockSynchronizer`
     pub tx_block_synchronizer_commands: IntGauge,
     /// occupancy of the channel from the `primary::WorkerReceiverHandler` to the `primary::StateHandler`
@@ -96,16 +92,12 @@ pub struct PrimaryChannelMetrics {
     pub tx_parents_total: IntCounter,
     /// total received on channel from the `primary::Proposer` to the `primary::Core`
     pub tx_headers_total: IntCounter,
-    /// total received on channel from the `primary::Synchronizer` to the `primary::HeaderWaiter`
-    pub tx_header_waiter_total: IntCounter,
     /// total received on channel from the `primary::Synchronizer` to the `primary::CertificaterWaiter`
     pub tx_certificate_waiter_total: IntCounter,
-    /// total received on channel from the `primary::HeaderWaiter` to the `primary::Core`
-    pub tx_headers_loopback_total: IntCounter,
     /// total received on channel from the `primary::CertificateWaiter` to the `primary::Core`
     pub tx_certificates_loopback_total: IntCounter,
     /// total received on channel from the `primary::PrimaryReceiverHandler` to the `primary::Core`
-    pub tx_primary_messages_total: IntCounter,
+    pub tx_certificates_total: IntCounter,
     /// total received on channel from the `primary::BlockSynchronizerHandler` to the `primary::BlockSynchronizer`
     pub tx_block_synchronizer_commands_total: IntCounter,
     /// total received on channel from the `primary::WorkerReceiverHandler` to the `primary::StateHandler`
@@ -163,19 +155,9 @@ impl PrimaryChannelMetrics {
                 "occupancy of the channel from the `primary::Proposer` to the `primary::Core`",
                 registry
             ).unwrap(),
-            tx_header_waiter: register_int_gauge_with_registry!(
-                "tx_sync_headers",
-                "occupancy of the channel from the `primary::Synchronizer` to the `primary::HeaderWaiter`",
-                registry
-            ).unwrap(),
             tx_certificate_waiter: register_int_gauge_with_registry!(
                 "tx_certificate_waiter",
                 "occupancy of the channel from the `primary::Synchronizer` to the `primary::CertificaterWaiter`",
-                registry
-            ).unwrap(),
-            tx_headers_loopback: register_int_gauge_with_registry!(
-                "tx_headers_loopback",
-                "occupancy of the channel from the `primary::HeaderWaiter` to the `primary::Core`",
                 registry
             ).unwrap(),
             tx_certificates_loopback: register_int_gauge_with_registry!(
@@ -183,8 +165,8 @@ impl PrimaryChannelMetrics {
                 "occupancy of the channel from the `primary::CertificateWaiter` to the `primary::Core`",
                 registry
             ).unwrap(),
-            tx_primary_messages: register_int_gauge_with_registry!(
-                "tx_primary_messages",
+            tx_certificates: register_int_gauge_with_registry!(
+                "tx_certificates",
                 "occupancy of the channel from the `primary::PrimaryReceiverHandler` to the `primary::Core`",
                 registry
             ).unwrap(),
@@ -235,19 +217,9 @@ impl PrimaryChannelMetrics {
                 "total received on channel from the `primary::Proposer` to the `primary::Core`",
                 registry
             ).unwrap(),
-            tx_header_waiter_total: register_int_counter_with_registry!(
-                "tx_sync_headers_total",
-                "total received on channel from the `primary::Synchronizer` to the `primary::HeaderWaiter`",
-                registry
-            ).unwrap(),
             tx_certificate_waiter_total: register_int_counter_with_registry!(
                 "tx_certificate_waiter_total",
                 "total received on channel from the `primary::Synchronizer` to the `primary::CertificaterWaiter`",
-                registry
-            ).unwrap(),
-            tx_headers_loopback_total: register_int_counter_with_registry!(
-                "tx_headers_loopback_total",
-                "total received on channel from the `primary::HeaderWaiter` to the `primary::Core`",
                 registry
             ).unwrap(),
             tx_certificates_loopback_total: register_int_counter_with_registry!(
@@ -255,8 +227,8 @@ impl PrimaryChannelMetrics {
                 "total received on channel from the `primary::CertificateWaiter` to the `primary::Core`",
                 registry
             ).unwrap(),
-            tx_primary_messages_total: register_int_counter_with_registry!(
-                "tx_primary_messages_total",
+            tx_certificates_total: register_int_counter_with_registry!(
+                "tx_certificates_total",
                 "total received on channel from the `primary::PrimaryReceiverHandler` to the `primary::Core`",
                 registry
             ).unwrap(),
@@ -338,8 +310,6 @@ pub struct PrimaryMetrics {
     pub certificates_suspended: IntCounterVec,
     /// Latency to perform a garbage collection in core module
     pub gc_core_latency: HistogramVec,
-    /// Number of cancel handlers for core module
-    pub core_cancel_handlers_total: IntGaugeVec,
     /// The current Narwhal round in proposer
     pub current_round: IntGaugeVec,
     /// The last received Narwhal round.
@@ -348,14 +318,6 @@ pub struct PrimaryMetrics {
     pub highest_received_round: IntGaugeVec,
     /// The highest Narwhal round that has been processed.
     pub highest_processed_round: IntGaugeVec,
-    /// Latency to perform a garbage collection in header_waiter
-    pub gc_header_waiter_latency: HistogramVec,
-    /// Number of elements in pending list of header_waiter
-    pub pending_elements_header_waiter: IntGaugeVec,
-    /// Number of parent requests list of header_waiter
-    pub parent_requests_header_waiter: IntGaugeVec,
-    /// Number of elements in the waiting (ready-to-deliver) list of header_waiter
-    pub waiting_elements_header_waiter: IntGaugeVec,
     /// 0 if there is no inflight certificates fetching, 1 otherwise.
     pub certificate_waiter_inflight_fetch: IntGaugeVec,
     /// Number of attempts to fetch certificates in certificate waiter.
@@ -433,13 +395,6 @@ impl PrimaryMetrics {
                 registry
             )
             .unwrap(),
-            core_cancel_handlers_total: register_int_gauge_vec_with_registry!(
-                "core_cancel_handlers_total",
-                "Number of cancel handlers in the core module",
-                &["epoch"],
-                registry
-            )
-            .unwrap(),
             current_round: register_int_gauge_vec_with_registry!(
                 "current_round",
                 "Current round the node will propose",
@@ -465,34 +420,6 @@ impl PrimaryMetrics {
                 "highest_processed_round",
                 "Highest round processed (stored) by the primary",
                 &["epoch", "source"],
-                registry
-            )
-            .unwrap(),
-            gc_header_waiter_latency: register_histogram_vec_with_registry!(
-                "gc_header_waiter_latency",
-                "Latency of a the garbage collection process for header module",
-                &["epoch"],
-                registry
-            )
-            .unwrap(),
-            pending_elements_header_waiter: register_int_gauge_vec_with_registry!(
-                "pending_elements_header_waiter",
-                "Number of pending elements in header waiter",
-                &["epoch"],
-                registry
-            )
-            .unwrap(),
-            parent_requests_header_waiter: register_int_gauge_vec_with_registry!(
-                "parent_requests_header_waiter",
-                "Number of parent requests in header waiter",
-                &["epoch"],
-                registry
-            )
-            .unwrap(),
-            waiting_elements_header_waiter: register_int_gauge_vec_with_registry!(
-                "waiting_elements_header_waiter",
-                "Number of waiting elements in header waiter",
-                &["epoch"],
                 registry
             )
             .unwrap(),

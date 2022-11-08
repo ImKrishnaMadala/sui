@@ -14,6 +14,8 @@ use test_utils::{fixture_payload, CommitteeFixture};
 use tokio::{sync::watch, time::timeout};
 use types::{BatchDigest, ReconfigureNotification, Round};
 
+// TODO-DNS migrate these tests as needed
+
 #[tokio::test]
 async fn successfully_synchronize_batches() {
     // GIVEN

@@ -311,24 +311,6 @@ impl UnreliableNetwork<WorkerSynchronizeMessage> for P2pNetwork {
     }
 }
 
-#[async_trait]
-impl ReliableNetwork<WorkerSynchronizeMessage> for P2pNetwork {
-    type Response = ();
-    async fn send(
-        &mut self,
-        peer: NetworkPublicKey,
-        message: &WorkerSynchronizeMessage,
-    ) -> CancelOnDropHandler<Result<anemo::Response<()>>> {
-        let message = message.to_owned();
-        let f = move |peer| {
-            let message = message.clone();
-            async move { PrimaryToWorkerClient::new(peer).synchronize(message).await }
-        };
-
-        self.send(peer, f).await
-    }
-}
-
 //
 // Worker-to-Primary
 //

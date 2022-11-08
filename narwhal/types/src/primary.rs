@@ -767,9 +767,26 @@ impl Affiliated for Certificate {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum PrimaryMessage {
-    Header(Header),
-    Vote(Vote),
     Certificate(Certificate),
+}
+
+/// Used by the primary to request a vote from other primaries on newly produced headers.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct RequestVoteRequest {
+    pub header: Header,
+
+    // Optional parent certificates provided by the requester, in case this primary doesn't yet
+    // have them and requires them in order to offer a vote.
+    pub parents: Vec<Certificate>,
+}
+
+/// Used by the primary to reply to RequestVoteRequest.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct RequestVoteResponse {
+    pub vote: Option<Vote>,
+
+    // Indicates digests of missing certificates without which a vote cannot be provided.
+    pub missing: Vec<CertificateDigest>,
 }
 
 /// Used by the primary to get specific certificates from other primaries.
